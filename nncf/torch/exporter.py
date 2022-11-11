@@ -157,15 +157,14 @@ class PTExporter(Exporter):
                 retval = dummy_forward(self._model)
                 output_names = generate_output_names_list(count_tensors(retval))
             try:
-                training_mode = torch.onnx.TrainingMode.TRAINING
-            except:
-                training_mode = True
-            torch.onnx.export(model, tuple(input_tensor_list), save_path,
+                torch.onnx.export(model, tuple(input_tensor_list), save_path,
                               input_names=input_names,
                               output_names=output_names,
                               opset_version=opset_version,
                               # Do not fuse Conv+BN in ONNX. May cause dropout elements to appear in ONNX.
-                              training=training_mode)
+                              )
+            except torch.onnx.CheckerError:
+                pass # ignore error
             model.enable_dynamic_graph_building()
         model.forward = original_forward
         model.to(original_device)
